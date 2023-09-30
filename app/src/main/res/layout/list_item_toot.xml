@@ -2,6 +2,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" >
+
+    <data>
+            <variable
+                name="toot"
+                type="io.keiji.sample.mastodonclient.Toot" />
+    </data>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,7 +21,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="keiji"/>
+            tools:text="@{toot.account.username}"/>
 
         <TextView
             android:id="@+id/content"
@@ -23,7 +30,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/user_name"
-            tools:text="ちなみに今日はほげほげ"/>
+            app:spannedContent="@{toot.content}" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
