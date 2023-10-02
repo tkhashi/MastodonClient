@@ -4,7 +4,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.Observable
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,22 +32,10 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
 
     private var binding: FragmentTootListBinding? = null
 
-    private val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(API_BASE_URL)
-        .addConverterFactory(MoshiConverterFactory.create(moshi))
-        .build()
-
-    private val api = retrofit.create(MastodonApi::class.java)
-
     private lateinit var adapter: TootListAdapter
-
     private lateinit var layoutManager: LinearLayoutManager
 
-    private var isLoading = AtomicBoolean()
+    private var isLoading = MutableLiveData<Boolean>()
     private var hasNext = AtomicBoolean().apply { set(true) }
 
     private val loadNextScrollListener = object : RecyclerView
@@ -52,7 +43,8 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                if (isLoading.get() || !hasNext.get()) return
+                val isLoadingSnapshot = isLoading.value ?: return
+                if (isLoadingSnapshot || !hasNext.get()) return
 
                 val visibleItemCount = recyclerView.childCount
                 val totalItemCount = layoutManager.itemCount
@@ -65,40 +57,40 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
         }
     }
 
+    private val tootRepository = TootRepository(API_BASE_URL)
     // 次のTootを読み込む
     private fun loadNext() {
         lifecycleScope.launch {
-            isLoading.set(true)
-            showProgress()
+            isLoading.postValue(true)
 
-            val tootListResponse = withContext(Dispatchers.IO){
-                api.fetchPublicTimeline(
-                maxId = tootList.lastOrNull()?.id,
-                onlyMedia = true)
-            }
-
+            val tootListSnapshot = tootList.value ?: ArrayList()
+            val tootListResponse = tootRepository.fetchPublicTimeline(
+                maxId = tootListSnapshot.lastOrNull()?.id,
+                onlyMedia = true
+            )
             Log.d(TAG, "fetchPublicTimeline")
 
-            tootList.addAll(tootListResponse.filter { !it.sensitive })
+            tootListSnapshot.addAll(tootListResponse.filter { !it.sensitive })
             Log.d(TAG, "addAll")
 
-            reloadTootList()
-
-            Log.d(TAG, "reloadTootList")
+            tootList.postValue(tootListSnapshot)
 
             hasNext.set(tootListResponse.isNotEmpty())
-            isLoading.set(false)
-            dismissProgress()
-
+            isLoading.postValue(false)
             Log.d(TAG, "dismissProgress")
         }
     }
 
-    private val tootList = ArrayList<Toot>()
+    private val tootList = MutableLiveData<ArrayList<Toot>>()
+
+    // 表示
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = TootListAdapter(layoutInflater, tootList)
+        val tootListSnapshot = tootList.value ?: ArrayList<Toot>().also {
+            tootList.value = it
+        }
+        adapter = TootListAdapter(layoutInflater, tootListSnapshot)
         layoutManager = LinearLayoutManager(
             requireContext(),
             LinearLayoutManager.VERTICAL,
@@ -113,22 +105,17 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
             it.addOnScrollListener(loadNextScrollListener)
         }
         bindingData.swipeRefreshLayout.setOnRefreshListener {
-            tootList.clear()
+            tootListSnapshot.clear()
             loadNext()
         }
 
+        isLoading.observe(viewLifecycleOwner, Observer{
+            binding?.swipeRefreshLayout?.isRefreshing = it
+        })
+        tootList.observe(viewLifecycleOwner, Observer {
+            adapter.notifyDataSetChanged()
+        })
+
         loadNext()
-    }
-
-    private suspend fun showProgress() = withContext(Dispatchers.Main){
-        binding?.swipeRefreshLayout?.isRefreshing = true
-    }
-
-    private suspend fun dismissProgress() = withContext(Dispatchers.Main){
-        binding?.swipeRefreshLayout?.isRefreshing = false
-    }
-
-    private suspend fun reloadTootList() = withContext(Dispatchers.Main){
-        adapter.notifyDataSetChanged()
     }
 }
