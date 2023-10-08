@@ -12,7 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.keiji.sample.mastodonclient.databinding.FragmentTootListBinding
 
-class TootListFragment : Fragment(R.layout.fragment_toot_list) {
+class TootListFragment : Fragment(R.layout.fragment_toot_list)
+    ,TootListAdapter.Callback {
     companion object {
         val TAG = TootListFragment::class.java.simpleName
     }
@@ -56,7 +57,7 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
         val tootListSnapshot = viewModel.tootList.value ?: ArrayList<Toot>().also {
             viewModel.tootList.value = it
         }
-        adapter = TootListAdapter(layoutInflater, tootListSnapshot)
+        adapter = TootListAdapter(layoutInflater, tootListSnapshot, this)
         layoutManager = LinearLayoutManager(
             requireContext(),
             LinearLayoutManager.VERTICAL,
@@ -93,5 +94,13 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
         if (activity is AppCompatActivity){
             activity.supportActionBar?.subtitle = accountInfo.username
         }
+    }
+
+    override fun openDetail(toot: Toot) {
+        val fragment = TootDetailFragment.newInstance(toot)
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(TootDetailFragment.TAG)
+            .commit()
     }
 }

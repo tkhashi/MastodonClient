@@ -5,12 +5,18 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.keiji.sample.mastodonclient.databinding.ListItemTootBinding
+import java.util.PrimitiveIterator
+import javax.security.auth.callback.Callback
 
 class TootListAdapter (
     private val layoutInflater: LayoutInflater,
     private val tootList: ArrayList<Toot>,
+    private val callback: Callback?
 ) : RecyclerView.Adapter<TootListAdapter.ViewHolder>()
 {
+    interface Callback{
+        fun openDetail(toot: Toot)
+    }
     override fun getItemCount(): Int = tootList.size
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -23,7 +29,7 @@ class TootListAdapter (
             false
         )
 
-        return ViewHolder(binding)
+        return ViewHolder(binding, callback)
     }
 
     override fun onBindViewHolder(
@@ -34,11 +40,15 @@ class TootListAdapter (
     }
 
     class ViewHolder(
-        private val binding: ListItemTootBinding
+        private val binding: ListItemTootBinding,
+        private val callback: Callback?
     ) : RecyclerView.ViewHolder(binding.root)
     {
         fun bind(toot: Toot){
             binding.toot = toot
+            binding.root.setOnClickListener{
+                callback?.openDetail(toot)
+            }
         }
     }
 }
