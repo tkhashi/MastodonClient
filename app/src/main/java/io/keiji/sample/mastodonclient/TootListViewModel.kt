@@ -12,18 +12,33 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 class TootListViewModel(
-    instanceUrl: String,
+    private val instanceUrl: String,
+    private val username: String,
     private val coroutineScope: CoroutineScope,
     application: Application
 ):AndroidViewModel(application), LifecycleObserver {
-    private val tootRepository = TootRepository(instanceUrl)
+    private val userCredentialRepository = UserCredentialRepository(
+        application
+    )
+    private lateinit var tootRepository: TootRepository
+    private lateinit var userCredential: UserCredential
+    private lateinit var accountRepository: AccountRepository
 
     val isLoading = MutableLiveData<Boolean>()
+    val accountInfo = MutableLiveData<Account>()
     var hasNext = true
     val tootList = MutableLiveData<ArrayList<Toot>>()
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {
+        coroutineScope.launch {
+            userCredential = userCredentialRepository
+                .find(instanceUrl, username) ?: return@launch
+            tootRepository = TootRepository(userCredential)
+            accountRepository = AccountRepository(userCredential)
+
+            loadNext()
+        }
 
     }
 
@@ -34,17 +49,23 @@ class TootListViewModel(
 
     fun loadNext(){
         coroutineScope.launch {
+            updateAccountInfo()
+
             isLoading.postValue(true)
             val tootListSnapshot = tootList.value ?: ArrayList()
             val maxId = tootListSnapshot.lastOrNull()?.id
-            val tootListResponse = tootRepository.fetchPublicTimeline(
-                maxId = maxId,
-                onlyMedia = true
+            val tootListResponse = tootRepository.fetchHomeTimeline(
+                maxId = maxId
             )
             tootListSnapshot.addAll(tootListResponse)
             tootList.postValue(tootListSnapshot)
             hasNext = tootListResponse.isNotEmpty()
             isLoading.postValue(false)
         }
+    }
+
+    private suspend fun updateAccountInfo(){
+        val accountInfoSnapshot = accountInfo.value ?: accountRepository.verifyAccountCredential()
+        accountInfo.postValue(accountInfoSnapshot)
     }
 }

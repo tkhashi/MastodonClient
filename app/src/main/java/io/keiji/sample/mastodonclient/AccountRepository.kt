@@ -3,14 +3,13 @@ package io.keiji.sample.mastodonclient
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
-class TootRepository(
+class AccountRepository (
     private val userCredential: UserCredential
-) {
+){
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
@@ -21,22 +20,10 @@ class TootRepository(
 
     private val api = retrofit.create(MastodonApi::class.java)
 
-    suspend fun fetchPublicTimeline(
-        maxId: String?,
-        onlyMedia: Boolean
-    ) = withContext(Dispatchers.IO){
-        api.fetchPublicTimeline(
-            maxId = maxId,
-            onlyMedia = onlyMedia
-        )
-    }
-
-    suspend fun fetchHomeTimeline(
-        maxId: String?
-    ) = withContext(Dispatchers.IO){
-        api.fetchHomeTimeline(
-            accessToken = "Bearer ${userCredential.accessToken}",
-            maxId = maxId
+    suspend fun verifyAccountCredential(
+    ): Account = withContext(Dispatchers.IO){
+        return@withContext api.verifyAccountCredential(
+            "Bearer ${userCredential.accessToken}"
         )
     }
 }
