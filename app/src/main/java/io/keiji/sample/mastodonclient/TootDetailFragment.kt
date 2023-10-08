@@ -10,7 +10,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.keiji.sample.mastodonclient.databinding.FragmentTootDetailBinding
-import io.keiji.sample.mastodonclient.databinding.FragmentTootListBinding
 
 class TootDetailFragment:Fragment(R.layout.fragment_toot_detail) {
     companion object {
@@ -52,6 +51,7 @@ class TootDetailFragment:Fragment(R.layout.fragment_toot_detail) {
         }
     }
 
+    private lateinit var adapter: MediaListAdapter
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -63,8 +63,18 @@ class TootDetailFragment:Fragment(R.layout.fragment_toot_detail) {
             return
         }
 
+        bindingData.recyclerView.layoutManager = LinearLayoutManager(
+            requireContext(),
+            LinearLayoutManager.HORIZONTAL,
+            false
+        )
+        bindingData.recyclerView.adapter = MediaListAdapter(layoutInflater).also {
+            adapter = it
+        }
+
         viewModel.toot.observe(viewLifecycleOwner, Observer{
             bindingData.toot = it
+            adapter.mediaList = it.mediaAttachments
         })
     }
 
