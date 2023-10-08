@@ -1,3 +1,7 @@
+import org.gradle.internal.impldep.com.google.api.client.googleapis.testing.auth.oauth2.MockGoogleCredential.ACCESS_TOKEN
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -10,6 +14,7 @@ android {
 
     buildFeatures {
         dataBinding = true
+        buildConfig = true
     }
 
     defaultConfig {
@@ -20,6 +25,24 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled = true
+
+        val prop = Properties().apply {
+            val file =project.rootProject.file("instance.properties")
+            if (!file.exists()){
+                file.createNewFile()
+            }
+            val stream = FileInputStream(file)
+            load(stream)
+        }
+        val INSTANCE_URL = prop.getProperty("instance_url") ?: ""
+        val USERNAME = prop.getProperty("username") ?: ""
+        val ACCESS_TOKEN = prop.getProperty("access_token") ?: ""
+
+        buildConfigField("String", "INSTANCE_URL", "\"${INSTANCE_URL}\"")
+        buildConfigField("String", "USERNAME", "\"${USERNAME}\"")
+        buildConfigField("String", "ACCESS_TOKEN", "\"${ACCESS_TOKEN}\"")
     }
 
     buildTypes {

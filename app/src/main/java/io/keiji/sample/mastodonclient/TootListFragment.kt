@@ -14,7 +14,6 @@ import io.keiji.sample.mastodonclient.databinding.FragmentTootListBinding
 class TootListFragment : Fragment(R.layout.fragment_toot_list) {
     companion object {
         val TAG = TootListFragment::class.java.simpleName
-        private const val API_BASE_URL = "https://social.vivaldi.net"
     }
 
     private var binding: FragmentTootListBinding? = null
@@ -24,7 +23,7 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
 
     private val viewModel: TootListViewModel by viewModels {
        TootListViewModelFactory(
-           API_BASE_URL,
+           BuildConfig.INSTANCE_URL,
            lifecycleScope,
            requireContext()
        )
@@ -44,12 +43,11 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
                     .findFirstVisibleItemPosition()
 
                 if ((totalItemCount - visibleItemCount) <= firstVisibleItemPosition){
-                    viewModel.loadNext()
+                    viewLifecycleOwner.lifecycle.addObserver(viewModel)
                 }
         }
     }
 
-    // 表示
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
