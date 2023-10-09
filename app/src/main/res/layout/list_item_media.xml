@@ -6,7 +6,7 @@
     <data>
         <variable
             name="media"
-            type="io.keiji.sample.mastodonclient.Media" />
+            type="io.keiji.sample.mastodonclient.entity.Media" />
     </data>
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/image"

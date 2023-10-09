@@ -2,7 +2,7 @@ package io.keiji.sample.mastodonclient
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
+import io.keiji.sample.mastodonclient.ui.toot_list.TootListFragment
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

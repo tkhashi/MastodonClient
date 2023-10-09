@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.keiji.sample.mastodonclient.databinding.ListItemMediaBinding
+import io.keiji.sample.mastodonclient.entity.Media
 
 class MediaListAdapter(
     private val layoutInflater: LayoutInflater

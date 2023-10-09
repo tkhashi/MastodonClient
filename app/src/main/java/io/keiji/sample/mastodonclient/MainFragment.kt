@@ -1,13 +1,13 @@
 package io.keiji.sample.mastodonclient
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.keiji.sample.mastodonclient.databinding.FragmentMainBinding
+import io.keiji.sample.mastodonclient.entity.Toot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

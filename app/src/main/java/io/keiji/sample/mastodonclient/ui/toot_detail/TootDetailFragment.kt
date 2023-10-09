@@ -1,4 +1,4 @@
-package io.keiji.sample.mastodonclient
+package io.keiji.sample.mastodonclient.ui.toot_detail
 
 import android.os.Bundle
 import android.view.View
@@ -9,7 +9,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import io.keiji.sample.mastodonclient.MediaListAdapter
+import io.keiji.sample.mastodonclient.R
 import io.keiji.sample.mastodonclient.databinding.FragmentTootDetailBinding
+import io.keiji.sample.mastodonclient.entity.Toot
 
 class TootDetailFragment:Fragment(R.layout.fragment_toot_detail) {
     companion object {
@@ -84,7 +87,7 @@ class TootDetailFragment:Fragment(R.layout.fragment_toot_detail) {
     }
 
     private fun showTootNotFound() {
-        Toast.makeText(requireContext(), "Toot not found", Toast.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), "io.keiji.sample.mastodonclient.entity.Toot not found", Toast.LENGTH_LONG).show()
     }
 
 }

@@ -1,7 +1,10 @@
-package io.keiji.sample.mastodonclient
+package io.keiji.sample.mastodonclient.repository
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import io.keiji.sample.mastodonclient.MastodonApi
+import io.keiji.sample.mastodonclient.entity.UserCredential
+import io.keiji.sample.mastodonclient.entity.Account
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit

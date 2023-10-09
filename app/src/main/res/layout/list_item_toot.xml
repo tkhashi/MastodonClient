@@ -6,7 +6,7 @@
     <data>
             <variable
                 name="toot"
-                type="io.keiji.sample.mastodonclient.Toot" />
+                type="io.keiji.sample.mastodonclient.entity.Toot" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
