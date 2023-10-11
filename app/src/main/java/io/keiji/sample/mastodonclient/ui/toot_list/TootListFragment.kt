@@ -1,5 +1,7 @@
 package io.keiji.sample.mastodonclient.ui.toot_list
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +25,7 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list)
     , TootListAdapter.Callback {
     companion object {
         val TAG = TootListFragment::class.java.simpleName
+        private const val REQUEST_CODE_TOOT_EDIT = 0x01
         
         private const val BUNDLE_KEY_TIMELINE_TYPE_ORDINAL = "timeline_type_ordinal"
         
@@ -129,13 +132,23 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list)
 
     private fun launchTootEditActivity() {
         val intent = TootEditActivity.newInstance(requireContext())
-        startActivity(intent)
+        startActivityForResult(intent, REQUEST_CODE_TOOT_EDIT)
     }
 
     private fun showAccountInfo(accountInfo: Account){
         val activity = requireActivity()
         if (activity is AppCompatActivity){
             activity.supportActionBar?.subtitle = accountInfo.username
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_TOOT_EDIT
+            && resultCode == Activity.RESULT_OK){
+            viewModel.clear()
+            viewModel.loadNext()
         }
     }
 
