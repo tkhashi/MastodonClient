@@ -156,4 +156,8 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list)
         val intent = TootDetailActivity.newInstance(requireContext(), toot)
         startActivity(intent)
     }
+
+    override fun delete(toot:Toot){
+        viewModel.delete(toot)
+    }
 }
