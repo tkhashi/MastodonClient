@@ -29,7 +29,13 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     }
 
     val onObtainCode = fun(code: String){
-
+        viewModel.requestAccessToken(
+            BuildConfig.CLIENT_KEY,
+            BuildConfig.CLIENT_SECRET,
+            BuildConfig.CLIENT_REDIRECT_URI,
+            BuildConfig.CLIENT_SCOPES,
+            code
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
