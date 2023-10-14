@@ -41,10 +41,18 @@ android {
         val INSTANCE_URL = prop.getProperty("instance_url") ?: ""
         val USERNAME = prop.getProperty("username") ?: ""
         val ACCESS_TOKEN = prop.getProperty("access_token") ?: ""
+        val CLIENT_KEY = prop.getProperty("client_key") ?: ""
+        val CLIENT_SECRET = prop.getProperty("client_secret") ?: ""
+        val CLIENT_SCOPES = prop.getProperty("client_scopes") ?: ""
+        val CLIENT_REDIRECT_URI = prop.getProperty("client_redirect_uri") ?: ""
 
         buildConfigField("String", "INSTANCE_URL", "\"${INSTANCE_URL}\"")
         buildConfigField("String", "USERNAME", "\"${USERNAME}\"")
         buildConfigField("String", "ACCESS_TOKEN", "\"${ACCESS_TOKEN}\"")
+        buildConfigField("String", "CLIENT_KEY", "\"${CLIENT_KEY}\"")
+        buildConfigField("String", "CLIENT_SECRET", "\"${CLIENT_SECRET}\"")
+        buildConfigField("String", "CLIENT_SCOPES", "\"${CLIENT_SCOPES}\"")
+        buildConfigField("String", "CLIENT_REDIRECT_URI", "\"${CLIENT_REDIRECT_URI}\"")
     }
 
     buildTypes {
