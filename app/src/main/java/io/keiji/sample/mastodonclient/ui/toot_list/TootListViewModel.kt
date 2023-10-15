@@ -2,6 +2,7 @@ package io.keiji.sample.mastodonclient.ui.toot_list
 
 
 import android.app.Application
+import android.net.wifi.hotspot2.pps.Credential
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
@@ -102,5 +103,24 @@ class TootListViewModel(
             tootListSnapshot?.remove(toot)
             tootList.postValue(tootListSnapshot!!)
         }
+    }
+
+    fun reloadUserCredential() {
+        coroutineScope.launch {
+            val credential = userCredentialRepository
+                .find(instanceUrl, username)
+            if (credential == null){
+                loginRequired.postValue(true)
+                return@launch
+            }
+
+            tootRepository = TootRepository(credential)
+            accountRepository = AccountRepository(credential)
+            userCredential = credential
+
+            clear()
+            loadNext()
+        }
+
     }
 }
