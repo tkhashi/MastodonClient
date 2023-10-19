@@ -14,7 +14,7 @@ class UserCredentialRepository(
     private val application: Application
 ) {
     companion object{
-        private const val KEY_ACCESS_TOKEN = "access_token_"
+        private const val KEY_ACCESS_TOKEN = "access_token"
     }
 
     private fun getPreference(instanceUrl: String): SharedPreferences? {

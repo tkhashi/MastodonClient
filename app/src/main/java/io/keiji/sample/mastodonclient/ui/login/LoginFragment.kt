@@ -30,7 +30,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         )
     }
 
-    val onObtainCode = fun(code: String){
+    private val onObtainCode = fun(code: String){
         viewModel.requestAccessToken(
             BuildConfig.CLIENT_KEY,
             BuildConfig.CLIENT_SECRET,
@@ -69,7 +69,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             .appendPath("oauth")
             .appendPath("authorize")
             .appendQueryParameter("client_id", BuildConfig.CLIENT_KEY)
-            .appendQueryParameter("redirect_url", BuildConfig.CLIENT_REDIRECT_URI)
+            .appendQueryParameter("redirect_uri", BuildConfig.CLIENT_REDIRECT_URI)
             .appendQueryParameter("response_type", "code")
             .appendQueryParameter("scope", BuildConfig.CLIENT_SCOPES)
             .build()

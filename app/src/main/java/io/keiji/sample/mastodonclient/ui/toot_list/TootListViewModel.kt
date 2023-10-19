@@ -39,21 +39,7 @@ class TootListViewModel(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {
-        coroutineScope.launch {
-            val credential = userCredentialRepository
-                .find(instanceUrl, username)
-            if(credential == null){
-                loginRequired.postValue(true)
-                return@launch
-            }
-
-            tootRepository = TootRepository(credential)
-            accountRepository = AccountRepository(credential)
-            userCredential = credential
-
-            loadNext()
-        }
-
+        reloadUserCredential()
     }
 
     fun clear(){
