@@ -1,12 +1,11 @@
 package io.keiji.sample.mastodonclient.ui.login
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.View
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -19,6 +18,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     companion object {
         val TAG = LoginFragment::class.java.simpleName
+        private const val REDIRECT_URI = "auth://${BuildConfig.APPLICATION_ID}"
     }
 
     private var binding: FragmentLoginBinding? = null
@@ -30,21 +30,21 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         )
     }
 
-    private val onObtainCode = fun(code: String){
-        viewModel.requestAccessToken(
-            BuildConfig.CLIENT_KEY,
-            BuildConfig.CLIENT_SECRET,
-            BuildConfig.CLIENT_REDIRECT_URI,
-            BuildConfig.CLIENT_SCOPES,
-            code
-        )
-    }
-
     interface Callback{
         fun onAuthCompleted()
     }
 
     private var callback: Callback? = null
+
+    fun requestAccessToken(code: String) {
+        viewModel.requestAccessToken(
+            BuildConfig.CLIENT_KEY,
+            BuildConfig.CLIENT_SECRET,
+            REDIRECT_URI,
+            BuildConfig.CLIENT_SCOPES,
+            code
+        )
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -69,30 +69,14 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             .appendPath("oauth")
             .appendPath("authorize")
             .appendQueryParameter("client_id", BuildConfig.CLIENT_KEY)
-            .appendQueryParameter("redirect_uri", BuildConfig.CLIENT_REDIRECT_URI)
+            .appendQueryParameter("redirect_uri", REDIRECT_URI)
             .appendQueryParameter("response_type", "code")
             .appendQueryParameter("scope", BuildConfig.CLIENT_SCOPES)
             .build()
 
-        val query = authUri.toString()
-        bindingData.webview.webViewClient = InnerWebViewClient(onObtainCode)
-        bindingData.webview.settings.javaScriptEnabled = true
-        bindingData.webview.loadUrl(query)
+        val intent = Intent(Intent.ACTION_VIEW, authUri).apply {
+            addCategory(Intent.CATEGORY_BROWSABLE)
+        }
+        startActivity(intent)
     }
-
-}
-
-private class InnerWebViewClient(
-    val onObtainCode: (code: String) -> Unit
-) : WebViewClient() {
-    override fun onPageFinished(view: WebView?, url: String?) {
-        super.onPageFinished(view, url)
-        view ?: return
-
-        val code = Uri.parse(view.url).getQueryParameter("code")
-        code ?: return
-
-        onObtainCode(code)
-    }
-
 }
