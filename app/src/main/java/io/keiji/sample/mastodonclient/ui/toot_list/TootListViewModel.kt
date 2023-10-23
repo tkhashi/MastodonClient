@@ -16,6 +16,9 @@ import io.keiji.sample.mastodonclient.repository.TootRepository
 import io.keiji.sample.mastodonclient.repository.UserCredentialRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
+import java.net.HttpURLConnection
 
 class TootListViewModel(
     private val instanceUrl: String,
@@ -33,6 +36,7 @@ class TootListViewModel(
 
     val loginRequired = MutableLiveData<Boolean>()
     val isLoading = MutableLiveData<Boolean>()
+    val errorMessage = MutableLiveData<String>()
     val accountInfo = MutableLiveData<Account>()
     var hasNext = true
     val tootList = MutableLiveData<ArrayList<Toot>>()
@@ -54,40 +58,69 @@ class TootListViewModel(
             isLoading.postValue(true)
             val tootListSnapshot = tootList.value ?: ArrayList()
             val maxId = tootListSnapshot.lastOrNull()?.id
-            val tootListResponse = when (timelineType){
-                TimelineType.PublicTimeline -> {
-                    tootRepository.fetchPublicTimeline(
-                        maxId = maxId,
-                        onlyMedia = true
-                    )
+            try {
+                val tootListResponse = when (timelineType) {
+                    TimelineType.PublicTimeline -> {
+                        tootRepository.fetchPublicTimeline(
+                            maxId = maxId,
+                            onlyMedia = true
+                        )
+                    }
+
+                    TimelineType.HomeTimeline -> {
+                        tootRepository.fetchHomeTimeline(
+                            maxId = maxId
+                        )
+                    }
                 }
-                TimelineType.HomeTimeline ->{
-                    tootRepository.fetchHomeTimeline(
-                        maxId = maxId
-                    )
+
+                tootListSnapshot.addAll(tootListResponse)
+                tootList.postValue(tootListSnapshot)
+                hasNext = tootListResponse.isNotEmpty()
+            } catch (e: HttpException){
+                when(e.code()){
+                    HttpURLConnection.HTTP_FORBIDDEN -> {
+                        errorMessage.postValue("必要な権限がありません")
+                    }
                 }
+            }finally {
+                isLoading.postValue(false)
             }
-            tootListSnapshot.addAll(tootListResponse)
-            tootList.postValue(tootListSnapshot)
-            hasNext = tootListResponse.isNotEmpty()
-            isLoading.postValue(false)
         }
     }
 
     private suspend fun updateAccountInfo(){
-        val accountInfoSnapshot = accountInfo.value ?: accountRepository.verifyAccountCredential()
-        accountInfo.postValue(accountInfoSnapshot)
+        try {
+            val accountInfoSnapshot = accountInfo.value ?: accountRepository.verifyAccountCredential()
+            accountInfo.postValue(accountInfoSnapshot)
+        }catch (e: HttpException){
+            when(e.code()){
+                HttpURLConnection.HTTP_FORBIDDEN -> {
+                    errorMessage.postValue("必要な権限がありません")
+                }
+            }
+        }catch (e: IOException){
+            errorMessage.postValue(
+                "サーバーに接続できませんでした。${e.message}"
+            )
+        }
     }
 
     fun delete(toot: Toot){
         coroutineScope.launch {
-            tootRepository.delete(toot.id)
 
-            if (tootList == null) return@launch
-
-            val tootListSnapshot = tootList.value
-            tootListSnapshot?.remove(toot)
-            tootList.postValue(tootListSnapshot!!)
+            try {
+                tootRepository.delete(toot.id)
+                val tootListSnapshot = tootList.value
+                tootListSnapshot?.remove(toot)
+                tootList.postValue(tootListSnapshot!!)
+            }catch (e: HttpException){
+                when(e.code()){
+                    HttpURLConnection.HTTP_FORBIDDEN -> {
+                        errorMessage.postValue("必要な権限がありません")
+                    }
+                }
+            }
         }
     }
 

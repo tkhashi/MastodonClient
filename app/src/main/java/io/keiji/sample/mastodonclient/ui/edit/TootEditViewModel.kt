@@ -7,6 +7,8 @@ import io.keiji.sample.mastodonclient.repository.TootRepository
 import io.keiji.sample.mastodonclient.repository.UserCredentialRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.net.HttpURLConnection
 
 class TootEditViewModel(
     private val instanceUrl: String,
@@ -42,10 +44,18 @@ class TootEditViewModel(
             }
 
             val tootRepository = TootRepository(credential)
-            tootRepository.postToot(
-                statusSnapshot
-            )
-            postComplete.postValue(true)
+            try{
+                tootRepository.postToot(
+                    statusSnapshot
+                )
+                postComplete.postValue(true)
+            } catch (e: HttpException){
+                when (e.code()){
+                    HttpURLConnection.HTTP_FORBIDDEN -> {
+                        errorMessasge.postValue("必要な権限がありません")
+                    }
+                }
+            }
         }
     }
 }
