@@ -3,13 +3,17 @@ package io.keiji.sample.mastodonclient.repository
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.keiji.sample.mastodonclient.MastodonApi
+import io.keiji.sample.mastodonclient.entity.Media
 import io.keiji.sample.mastodonclient.entity.Toot
 import io.keiji.sample.mastodonclient.entity.UserCredential
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import java.sql.ClientInfoStatus
+import java.io.File
 
 class TootRepository(
     private val userCredential: UserCredential
@@ -44,12 +48,31 @@ class TootRepository(
     }
 
     suspend fun postToot(
-        status: String
+        status: String,
+        mediaIds: List<String>? = null
     ): Toot = withContext(Dispatchers.IO){
         return@withContext api.postToot(
             "Bearer ${userCredential.accessToken}",
-            status
+            status,
+            mediaIds,
         )
+    }
+
+    suspend fun postMedia(
+        file: File,
+        mediaType: String
+    ) : Media = withContext(Dispatchers.IO){
+        val part = MultipartBody.Part.createFormData(
+            "file",
+            file.name,
+            RequestBody.create(MediaType.parse(mediaType), file)
+        )
+
+        return@withContext api.postMedia(
+            "Bearer ${userCredential.accessToken}",
+            part
+        )
+
     }
 
     suspend fun delete(id: String) = withContext(Dispatchers.IO){
